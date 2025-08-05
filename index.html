@@ -1,31 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fortune Prompt</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <style>
     body {
       background-color: #E6E6FA;
       color: #2c2c2c;
     }
+
     h1 {
       color: #FF6AC1;
     }
+
     .card-sticker {
       font-size: 0.9em;
       margin-left: 8px;
       color: #FFD700;
     }
+
     .copy-button {
       position: absolute;
       top: 10px;
       right: 10px;
     }
-    .hidden { display: none; }
+
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
+
 <body>
   <div class="container py-5">
     <h1 class="text-center mb-4">Fortune Prompt</h1>
@@ -34,23 +42,34 @@
     <div class="row g-2 align-items-end mb-4">
       <div class="col-md">
         <label class="form-label">Type of Fortune</label>
-        <select id="fortuneType" class="form-select">
-          <option selected>General</option>
-          <option>Work</option>
-          <option>Study</option>
-          <option>Financial</option>
-          <option>Love</option>
-          <option>Health</option>
+        <select id="fortuneType" class="form-select" required>
+          <option selected value="General">General (ทั่วไป)</option>
+          <option value="Work">Work (การงาน)</option>
+          <option value="Study">Study (การเรียน)</option>
+          <option value="Financial">Financial (การเงิน)</option>
+          <option value="Love">Love (ความรัก)</option>
+          <option value="Health">Health (สุขภาพ)</option>
         </select>
       </div>
       <div class="col-md">
         <label class="form-label">Type of Card</label>
-        <select id="cardType" class="form-select">
+        <select id="cardType" class="form-select" onchange="toggleReadingTypeOptions()" required>
           <option selected>1 card</option>
           <option>3 cards</option>
           <option>5 cards</option>
         </select>
       </div>
+      <!-- 3-Card Reading Types -->
+      <div class="col-md-6" id="readingTypeWrapper" style="display:none">
+        <label class="form-label">3-Card Reading Format</label>
+        <select id="threeCardReadingType" class="form-select" required>
+          <option selected value="">-- Select Format --</option>
+          <option value="Past/Present/Future" selected>Past(อดีต) /Present(ปัจจุบัน) /Future(อนาคต)</option>
+          <option value="Cause/Effect/Conclusion">Cause(เหตุ) /Effect(ผล) /Conclusion(สรุป)</option>
+          <option value="MyFeeling/HisHerFeeling/Relationship">My feeling (ความรู้สึกของเรา) /His-Her feeling (ความรู้สึกของเขา) /Future relationship (ความสัมพันธ์ในอนาคต)</option>
+        </select>
+      </div>
+
       <div class="col-md-auto">
         <button class="btn btn-outline-secondary" onclick="clearSelections()">Clear</button>
       </div>
@@ -58,6 +77,8 @@
         <button class="btn btn-primary" onclick="generateCardFields()">Confirm</button>
       </div>
     </div>
+
+
 
     <!-- Dynamic Card Section -->
     <div id="cardFields" class="hidden">
@@ -88,16 +109,29 @@
       </div>
     </div>
   </div>
-
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    const resultModalElement = document.getElementById("resultModal");
+    const resultModal = new bootstrap.Modal(resultModalElement);
+
+    resultModalElement.addEventListener('shown.bs.modal', function () {
+      document.getElementById("promptText").focus();
+    });
+
     const majorCards = ["The Fool", "The Magician", "The High Priestess", "The Empress", "The Emperor", "The Hierophant", "The Lovers", "The Chariot", "Strength", "The Hermit", "Wheel of Fortune", "Justice", "The Hanged Man", "Death", "Temperance", "The Devil", "The Tower", "The Star", "The Moon", "The Sun", "The World"];
-    const minorHeads = ["Sword", "Wand", "Pentacle", "Cup"];
+    const minorHeads = ["Swords", "Wands", "Pentacles", "Cups"];
     const minorValues = ["Ace", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Page", "Knight", "Queen", "King"];
+
+    function toggleReadingTypeOptions() {
+      const type = document.getElementById("cardType").value;
+      document.getElementById("readingTypeWrapper").style.display = type === "3 cards" ? "block" : "none";
+    }
 
     function clearSelections() {
       document.getElementById("fortuneType").value = "General";
       document.getElementById("cardType").value = "1 card";
       document.getElementById("cardFields").classList.add("hidden");
+      document.getElementById("readingTypeWrapper").style.display = "none";
     }
 
     function generateCardFields() {
@@ -110,34 +144,34 @@
             <div><strong>Card ${i + 1}</strong> <span id="cardHeader${i}" class="card-sticker"></span></div>
             <div class="row g-2 mt-2">
               <div class="col-md-3">
-                <select id="arcana${i}" class="form-select" onchange="toggleArcana(${i})">
+                <select id="arcana${i}" class="form-select" onchange="toggleArcana(${i})" required>
                   <option value="">Select Arcana</option>
                   <option value="major">Major Arcana</option>
                   <option value="minor">Minor Arcana</option>
                 </select>
               </div>
               <div class="col-md-4" id="majorWrap${i}" style="display:none">
-                <select id="majorCard${i}" class="form-select" onchange="updateCardHeader(${i})">
+                <select id="majorCard${i}" class="form-select" onchange="updateCardHeader(${i})" required>
                   <option value="">Select Major Card</option>
                   ${majorCards.map(c => `<option value="major:${c}">${c}</option>`).join('')}
                 </select>
               </div>
               <div class="col-md-2" id="minorValWrap${i}" style="display:none">
-                <select id="minorValue${i}" class="form-select" onchange="updateCardHeader(${i})">
+                <select id="minorValue${i}" class="form-select" onchange="updateCardHeader(${i})" required>
                   <option value="">Value</option>
                   ${minorValues.map(v => `<option value="${v}">${v}</option>`).join('')}
                 </select>
               </div>
               <div class="col-md-2" id="minorHeadWrap${i}" style="display:none">
-                <select id="minorHead${i}" class="form-select" onchange="updateCardHeader(${i})">
+                <select id="minorHead${i}" class="form-select" onchange="updateCardHeader(${i})" required>
                   <option value="">Type</option>
                   ${minorHeads.map(h => `<option value="${h}">${h}</option>`).join('')}
                 </select>
               </div>
               <div class="col-md-2">
-                <select id="cardStatus${i}" class="form-select" onchange="updateCardHeader(${i})">
-                  <option value="upright">Upright</option>
-                  <option value="reversed">Reversed</option>
+                <select id="cardStatus${i}" class="form-select" onchange="updateCardHeader(${i})" required>
+                  <option value="Upright">Upright</option>
+                  <option value="Reversed">Reversed</option>
                 </select>
               </div>
               <div class="col-md-1">
@@ -184,7 +218,7 @@
       document.getElementById(`majorCard${i}`).value = '';
       document.getElementById(`minorValue${i}`).value = '';
       document.getElementById(`minorHead${i}`).value = '';
-      document.getElementById(`cardStatus${i}`).value = 'straight';
+      document.getElementById(`cardStatus${i}`).value = 'Upright';
       toggleArcana(i);
     }
 
@@ -194,10 +228,35 @@
     }
 
     function confirmPrompt() {
+      const readingFormatLabels = {
+        "Past/Present/Future": ["Past", "Present", "Future"],
+        "Cause/Effect/Conclusion": ["Cause", "Effect", "Conclusion"],
+        "MyFeeling/HisHerFeeling/Relationship": ["My Feeling", "His/Her Feeling", "The future of this Relationship"],
+        
+      };
+      const topicsMap = {
+        "Love": ["Relationships", "Emotions", "Changes", "Possibilities", "Warnings", "Love-related advice"],
+        "Work": ["Job stability or changes", "Focus and motivation", "Workplace relationships", "Promotion or demotion", "Career direction and purpose", "Advice on work challenges or opportunities"],
+        "Study": ["Academic success or challenges", "Focus and motivation", "Exam result or preparation", "Advice on how to study or improve", "Choices regarding study path or future education"],
+        "Financial": ["Money matters", "Career income", "Businees or investment choices", "Financial risks and gains", "Advice about saving, spending, or managing wealth"],
+        "Health": ["Well-being", "Balance", "Stress", "Habits", "Recovery"],
+        "General": ["Daily life situations", "Decision making", "Emotional well-being", "Life transitions", "General advice and insigths"]
+      };
       const type = document.getElementById("fortuneType").value;
       const cardType = document.getElementById("cardType").value;
-      let result = `Fortune Type: ${type}\nCard Spread: ${cardType}\n\n`;
+      const readingFormat = document.getElementById("threeCardReadingType").value;
+      const formatLabels = readingFormatLabels[readingFormat] || [];
       const total = document.getElementById("cardInputs").children.length;
+      const collectedCards = [];
+
+      let result = `Fortune Type: ${type} 
+Card Spread: ${cardType}`;
+      if (cardType === "3 cards" && readingFormat) {
+        result += `
+3-Card Format: ${readingFormat}`;
+      }
+      result += `
+`;
       for (let i = 0; i < total; i++) {
         const arcana = document.getElementById(`arcana${i}`).value;
         const status = document.getElementById(`cardStatus${i}`).value;
@@ -212,12 +271,104 @@
         if (!text) return alert('Please complete all cards.');
         const parts = text.split(':');
         const display = parts[0] === 'major' ? parts[1] : `${parts[2]} of ${parts[1]}`;
-        result += `Card ${i + 1}: ${display} (${status})\n`;
+        const label = (formatLabels.length === total) ? formatLabels[i] : `Card ${i + 1}`;
+        collectedCards.push({ label, display, status });
       }
-      document.getElementById("promptText").value = result;
-      new bootstrap.Modal(document.getElementById("resultModal")).show();
-    }
 
+      if (cardType === "3 cards") {
+        let prompt = `You are a professional tarot reader specializing in accurate ${type.toLowerCase()}-related predictions. `;
+        prompt += `You will use a 3-card tarot spread, where each card represents the following: \n\n`;
+        const topics_ = readingFormatLabels[readingFormatLabels] || ["General insight"];
+        // formatLabels.forEach(t => { prompt += `-Card 1 represents the ${t}\n`; });
+
+        for (let i = 0; i < 3; i++){
+          prompt += `- Card ${i + 1} represents the ${formatLabels[i]}\n`;
+        } 
+        prompt += `\nYou will receive the names of three tarot cards (from either the Major Arcana or Minor Arcana). Each card may appear in either the Upright or Reversed position, which significantly affects its meaning.\n\n`;
+        prompt += `Please interpret each card based on both its **position (${readingFormat})** and its **orientation (Upright or Reversed)**.\n\n`;
+        prompt += `Your interpretation should focus **only on ${type.toLowerCase()}-related topics**, such as:\n`;
+
+        const topics = topicsMap[type] || ["General insight"];
+        topics.forEach(t => { prompt += `- ${t}\n`; });
+
+        prompt += `\nPlease respond in the following format:\n`;
+        prompt += `1. 🔮 Card 1 (${readingFormat === "Past/Present/Future" ? "Past" : readingFormat === "Cause/Effect/Conclusion" ? "Cause" : "MyFeeling"}): [Card Name] ([Upright/Reversed]) –  ${readingFormat === "Past/Present/Future" ? "["+type + "-related meaning in the past]" : readingFormat === "Cause/Effect/Conclusion" ? "[The cause of the " + type + " situation]" : "[Interpretation of your current feeling in " + type+"]"} \n`;
+        prompt += `2. 🔮 Card 2 (${readingFormat === "Past/Present/Future" ? "Present" : readingFormat === "Cause/Effect/Conclusion" ? "Effect" : "His/Her Felling"}): [Card Name] ([Upright/Reversed]) –  ${readingFormat === "Past/Present/Future" ?"["+type + "-related meaning in the current situation]" : readingFormat === "Cause/Effect/Conclusion" ? "[Effect in the "+ type + " situation]" : "[Interpretaion of his/her/its feeling " + type+"]"}\n`;
+        prompt += `3. 🔮 Card 3 (${readingFormat === "Past/Present/Future" ? "Future" : readingFormat === "Cause/Effect/Conclusion" ? "Conclusion" : "The future of this relationship"}): [Card Name] ([Upright/Reversed]) – ${readingFormat === "Past/Present/Future" ? "[Future" + type + " prediction]" : readingFormat === "Cause/Effect/Conclusion" ? "[Conclusion and likely outcome in " + type+"]" : "[Interpretation of romantic relationship between both parties that relate to" + type+"]"}\n`;
+
+        prompt += `\nThen, give an **overall analysis** and offer **gentle, thoughtful, and encouraging guidance**. Avoid making overly certain or absolute conclusions.\n\n`;
+
+        prompt += `Example input: \nThe Lovers (Upright), The Moon (Reversed), Eight of Cups (Upright),\n`;
+
+        prompt += `\nNow, please interpret the following cards: \n`
+        collectedCards.forEach(card => {
+          prompt += `${card.display} (${card.status}), `;
+        });
+
+        prompt += `\n⚠️ Finally, please translate your full answer into clear, natural Thai without changing or distorting the meaning of the reading. Use soft and understandable Thai language.`;
+
+        document.getElementById("promptText").value = prompt;
+        resultModal.show();
+      } else if (cardType === "1 card") {
+        let prompt = `You are a professional tarot reader specializing in accurate ${type.toLowerCase()}-related predictions. `;
+        prompt += `You will use a single tarot card to provide insight into the current situation. \n`;
+        prompt += `\nYou will receive the names of single tarot cards (from either the Major Arcana or Minor Arcana). Each card may appear in either the Upright or Reversed position, which significantly affects its meaning.\n\n`;
+        prompt += `Please interpret the card based on its focus **only on ${type.toLowerCase()}-related topics** and its**orientation (Upright or Reversed)**.\n\n`;
+        prompt += `Your interpretation should focus on topics such as:\n`;
+
+        const topics = topicsMap[type] || ["General insight"];
+        topics.forEach(t => { prompt += `- ${t}\n`; });
+
+        prompt += `\nPlease respond in the following format:\n`;
+        prompt += `1. 🔮 Card: [Card Name] ([Upright/Reversed]) – [Interpretation of the ${type} situation]\n\n`;
+        prompt += `Example input: \nThe Lovers (Upright),\n\n`;
+        prompt += `Now, please interpret the following card: \n`;
+        collectedCards.forEach(card => {
+          prompt += `${card.display} (${card.status}), `;
+        });
+        prompt += `\n\n⚠️ Finally, please translate your full answer into clear, natural Thai without changing or distorting the meaning of the reading. Use soft and understandable Thai language.`;
+
+        document.getElementById("promptText").value = prompt;
+        resultModal.show();
+      } else if (cardType === "5 cards") {
+        let prompt = `You are a professional tarot reader specializing in accurate ${type.toLowerCase()}-related predictions. `;
+        prompt += `You will use a 5-card tarot spread, where each card represents the following: \n\n- Card 1 represents the Past \n- Card 2 represents the Present \n- Card 3 represents the Future \n- Card 4 represents the Influencing Factors \n- Card 5 represents the Likely Outcome or Direction`;
+        prompt += `\n\nYou will receive the names of five tarot cards (from either the Major Arcana or Minor Arcana). Each card may appear in either the Upright or Reversed position, which significantly affects its meaning.\n\n`;
+        prompt += `Please interpret each card based on its**position (Past/Present/Future/Influencing Factors/Likely Outcome or Direction)** and its **orientation (Upright or Reversed)**.\n\n`;
+        prompt += `Your interpretation should focus**only on ${type.toLowerCase()}-related topics** such as:\n`;
+
+        const topics = topicsMap[type] || ["General insight"];
+        topics.forEach(t => { prompt += `- ${t}\n`; });
+
+        prompt += `\nPlease respond in the following format:\n`;
+        prompt += `1. 🔮 Card 1 (Past): [Card Name] ([Upright/Reversed]) – [` + type +`-related meaning in the past]\n`;
+        prompt += `2. 🔮 Card 2 (Present): [Card Name] ([Upright/Reversed]) – [Current situation in` + type.toLowerCase() +`]\n`;
+        prompt += `3. 🔮 Card 3 (Future): [Card Name] ([Upright/Reversed]) – [Future ` + type.toLowerCase() +` prediction]\n`;
+        prompt += `4. 🔮 Card 4 (Influencing Factors): [Card Name] ([Upright/Reversed]) – [Hidden or external influence affecting your ` + type.toLowerCase() +` life]\n`;
+        prompt += `5. 🔮 Card 5 (Likely Outcome): [Card Name] ([Upright/Reversed]) – [What direction your` + type.toLowerCase() +` life is heading]\n`;
+        prompt += `\nExample input: \nThe Lovers (Upright), The Moon (Reversed), Eight of Cups (Upright), The Emperor (Reversed), Two of Pentacles (Upright),\n\n`;
+        prompt += `Now, please interpret the following cards: \n`;
+        collectedCards.forEach(card => {
+          prompt += `${card.display} (${card.status}), `;
+        });
+        prompt += `\n\n⚠️ Finally, please translate your full answer into clear, natural Thai without changing or distorting the meaning of the reading. Use soft and understandable Thai language.`;
+
+        document.getElementById("promptText").value = prompt;
+        resultModal.show();
+      }
+      // else {
+      //   result += `Fortune Type: ${type}\nCard Spread: ${cardType}`;
+      //   if (cardType === "3 cards" && readingFormat) {
+      //     result += `\n3-Card Format: ${readingFormat}`;
+      //   }
+      //   result += `\n\n`;
+      //   collectedCards.forEach((card, i) => {
+      //     result += `${card.label}: ${card.display} (${card.status})\n`;
+      //   });
+      //   document.getElementById("promptText").value = result;
+      //   resultModal.show();
+      // }
+    }
     function copyPrompt() {
       navigator.clipboard.writeText(document.getElementById("promptText").value).then(() => {
         document.getElementById("copyConfirm").classList.remove("d-none");
@@ -225,7 +376,6 @@
       });
     }
   </script>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
