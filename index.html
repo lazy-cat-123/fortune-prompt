@@ -42,7 +42,7 @@
     <div class="row g-2 align-items-end mb-4">
       <div class="col-md">
         <label class="form-label">Type of Fortune</label>
-        <select id="fortuneType" class="form-select">
+        <select id="fortuneType" class="form-select" required>
           <option selected value="General">General (ทั่วไป)</option>
           <option value="Work">Work (การงาน)</option>
           <option value="Study">Study (การเรียน)</option>
@@ -53,7 +53,7 @@
       </div>
       <div class="col-md">
         <label class="form-label">Type of Card</label>
-        <select id="cardType" class="form-select" onchange="toggleReadingTypeOptions()">
+        <select id="cardType" class="form-select" onchange="toggleReadingTypeOptions()" required>
           <option selected>1 card</option>
           <option>3 cards</option>
           <option>5 cards</option>
@@ -62,9 +62,9 @@
       <!-- 3-Card Reading Types -->
       <div class="col-md-6" id="readingTypeWrapper" style="display:none">
         <label class="form-label">3-Card Reading Format</label>
-        <select id="threeCardReadingType" class="form-select">
+        <select id="threeCardReadingType" class="form-select" required>
           <option selected value="">-- Select Format --</option>
-          <option value="Past/Present/Future">Past(อดีต) /Present(ปัจจุบัน) /Future(อนาคต)</option>
+          <option value="Past/Present/Future" selected>Past(อดีต) /Present(ปัจจุบัน) /Future(อนาคต)</option>
           <option value="Cause/Effect/Conclusion">Cause(เหตุ) /Effect(ผล) /Conclusion(สรุป)</option>
           <option value="MyFeeling/HisHerFeeling/Relationship">My feeling (ความรู้สึกของเรา) /His-Her feeling (ความรู้สึกของเขา) /Future relationship (ความสัมพันธ์ในอนาคต)</option>
         </select>
@@ -128,9 +128,10 @@
     }
 
     function clearSelections() {
-      document.getElementById("fortuneType").value = "General (ทั่วไป)";
+      document.getElementById("fortuneType").value = "General";
       document.getElementById("cardType").value = "1 card";
       document.getElementById("cardFields").classList.add("hidden");
+      document.getElementById("readingTypeWrapper").style.display = "none";
     }
 
     function generateCardFields() {
@@ -143,32 +144,32 @@
             <div><strong>Card ${i + 1}</strong> <span id="cardHeader${i}" class="card-sticker"></span></div>
             <div class="row g-2 mt-2">
               <div class="col-md-3">
-                <select id="arcana${i}" class="form-select" onchange="toggleArcana(${i})">
+                <select id="arcana${i}" class="form-select" onchange="toggleArcana(${i})" required>
                   <option value="">Select Arcana</option>
                   <option value="major">Major Arcana</option>
                   <option value="minor">Minor Arcana</option>
                 </select>
               </div>
               <div class="col-md-4" id="majorWrap${i}" style="display:none">
-                <select id="majorCard${i}" class="form-select" onchange="updateCardHeader(${i})">
+                <select id="majorCard${i}" class="form-select" onchange="updateCardHeader(${i})" required>
                   <option value="">Select Major Card</option>
                   ${majorCards.map(c => `<option value="major:${c}">${c}</option>`).join('')}
                 </select>
               </div>
               <div class="col-md-2" id="minorValWrap${i}" style="display:none">
-                <select id="minorValue${i}" class="form-select" onchange="updateCardHeader(${i})">
+                <select id="minorValue${i}" class="form-select" onchange="updateCardHeader(${i})" required>
                   <option value="">Value</option>
                   ${minorValues.map(v => `<option value="${v}">${v}</option>`).join('')}
                 </select>
               </div>
               <div class="col-md-2" id="minorHeadWrap${i}" style="display:none">
-                <select id="minorHead${i}" class="form-select" onchange="updateCardHeader(${i})">
+                <select id="minorHead${i}" class="form-select" onchange="updateCardHeader(${i})" required>
                   <option value="">Type</option>
                   ${minorHeads.map(h => `<option value="${h}">${h}</option>`).join('')}
                 </select>
               </div>
               <div class="col-md-2">
-                <select id="cardStatus${i}" class="form-select" onchange="updateCardHeader(${i})">
+                <select id="cardStatus${i}" class="form-select" onchange="updateCardHeader(${i})" required>
                   <option value="Upright">Upright</option>
                   <option value="Reversed">Reversed</option>
                 </select>
