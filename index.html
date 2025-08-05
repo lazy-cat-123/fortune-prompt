@@ -2,66 +2,40 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Fortune Prompt</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <style>
     body {
-      background-color: #1A1A40;
-      color: #EAEAEA;
+      background-color: #E6E6FA;
+      color: #2c2c2c;
     }
     h1 {
       color: #FF6AC1;
-      text-align: center;
-      margin: 2rem 0;
     }
-    .form-label {
+    .card-sticker {
+      font-size: 0.9em;
+      margin-left: 8px;
       color: #FFD700;
     }
-    .highlight {
-      color: #6BE4FF;
-    }
-    .card-field {
-      border: 1px solid #6BE4FF;
-      border-radius: 8px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-    }
-    .floating-label {
-      position: relative;
-    }
-    .floating-label input:focus + label,
-    .floating-label input:not(:placeholder-shown) + label {
-      top: -0.75rem;
-      left: 0.5rem;
-      background-color: #1A1A40;
-      padding: 0 0.25rem;
-      font-size: 0.8rem;
-    }
-    .floating-label label {
+    .copy-button {
       position: absolute;
-      top: 0.75rem;
-      left: 0.75rem;
-      color: #FFD700;
-      pointer-events: none;
-      transition: 0.2s ease;
+      top: 10px;
+      right: 10px;
     }
-    .floating-label input {
-      padding-top: 1.25rem;
-    }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Fortune Prompt</h1>
+  <div class="container py-5">
+    <h1 class="text-center mb-4">Fortune Prompt</h1>
 
-    <!-- Top Form -->
-    <div class="row g-3 align-items-end mb-4">
-      <div class="col-md-3">
-        <label class="form-label">Type of Fortune*</label>
-        <select class="form-select" id="fortuneType">
-          <option value="">Select...</option>
-          <option>General</option>
+    <!-- Top Input Section -->
+    <div class="row g-2 align-items-end mb-4">
+      <div class="col-md">
+        <label class="form-label">Type of Fortune</label>
+        <select id="fortuneType" class="form-select">
+          <option selected>General</option>
           <option>Work</option>
           <option>Study</option>
           <option>Financial</option>
@@ -69,172 +43,189 @@
           <option>Health</option>
         </select>
       </div>
-      <div class="col-md-3">
-        <label class="form-label">Type of Card*</label>
-        <select class="form-select" id="cardType">
-          <option value="">Select...</option>
-          <option>1 card</option>
+      <div class="col-md">
+        <label class="form-label">Type of Card</label>
+        <select id="cardType" class="form-select">
+          <option selected>1 card</option>
           <option>3 cards</option>
           <option>5 cards</option>
         </select>
       </div>
-      <div class="col-md-2">
-        <button class="btn btn-secondary w-100" onclick="clearTopInputs()">Clear</button>
+      <div class="col-md-auto">
+        <button class="btn btn-outline-secondary" onclick="clearSelections()">Clear</button>
       </div>
-      <div class="col-md-2">
-        <button class="btn btn-primary w-100" onclick="confirmTopInputs()">Confirm</button>
+      <div class="col-md-auto">
+        <button class="btn btn-primary" onclick="generateCardFields()">Confirm</button>
       </div>
     </div>
 
-    <!-- Dynamic Card Fields -->
-    <div id="cardFields"></div>
-
-    <!-- Confirm Button -->
-    <div class="text-center" id="finalConfirmContainer" style="display:none">
-      <button class="btn btn-success" onclick="generatePrompt()">Confirm</button>
+    <!-- Dynamic Card Section -->
+    <div id="cardFields" class="hidden">
+      <h4 class="mb-3">Choose Cards</h4>
+      <div id="cardInputs"></div>
+      <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-outline-secondary" onclick="clearCardValues()">Clear All</button>
+        <button class="btn btn-success" onclick="confirmPrompt()">Confirm</button>
+      </div>
     </div>
 
-    <!-- Modal for Prompt Result -->
-    <div class="modal fade" id="promptModal" tabindex="-1">
-      <div class="modal-dialog">
-        <div class="modal-content bg-dark text-light">
+    <!-- Result Modal -->
+    <div class="modal fade" id="resultModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Prompt Result</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
-            <textarea id="promptOutput" class="form-control" rows="8" readonly></textarea>
-            <div class="mt-2 text-end">
-              <button class="btn btn-outline-info btn-sm" onclick="copyPrompt()">Copy to Clipboard</button>
-              <span id="copyStatus" class="ms-2 text-success" style="display:none;">Copied!</span>
+            <div class="position-relative">
+              <textarea id="promptText" class="form-control" rows="6" readonly></textarea>
+              <button class="btn btn-outline-primary copy-button" onclick="copyPrompt()">Copy</button>
+              <div id="copyConfirm" class="text-success mt-2 d-none">Copied to clipboard!</div>
             </div>
           </div>
         </div>
       </div>
     </div>
-
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    const cardFields = document.getElementById("cardFields");
+    const majorCards = ["The Fool", "The Magician", "The High Priestess", "The Empress", "The Emperor", "The Hierophant", "The Lovers", "The Chariot", "Strength", "The Hermit", "Wheel of Fortune", "Justice", "The Hanged Man", "Death", "Temperance", "The Devil", "The Tower", "The Star", "The Moon", "The Sun", "The World"];
+    const minorHeads = ["Sword", "Wand", "Pentacle", "Cup"];
+    const minorValues = ["Ace", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Page", "Knight", "Queen", "King"];
 
-    function clearTopInputs() {
-      document.getElementById("fortuneType").value = "";
-      document.getElementById("cardType").value = "";
-      cardFields.innerHTML = "";
-      document.getElementById("finalConfirmContainer").style.display = "none";
+    function clearSelections() {
+      document.getElementById("fortuneType").value = "General";
+      document.getElementById("cardType").value = "1 card";
+      document.getElementById("cardFields").classList.add("hidden");
     }
 
-    function confirmTopInputs() {
-      const cardCountMap = {
-        "1 card": 1,
-        "3 cards": 3,
-        "5 cards": 5
-      };
-      const type = document.getElementById("cardType").value;
-      const count = cardCountMap[type] || 0;
-      cardFields.innerHTML = "";
-
-      for (let i = 1; i <= count; i++) {
-        cardFields.innerHTML += `
-        <div class="card-field">
-          <label class="form-label">Card ${i}</label>
-          <div class="row g-2">
-            <div class="col-md-4">
-              <select class="form-select card-major" placeholder="Major Card">
-                <option value="">-- Major Card --</option>
-                <option>The Fool</option>
-                <option>The Magician</option>
-                <option>The High Priestess</option>
-                <option>The Empress</option>
-                <option>The Emperor</option>
-                <option>The Hierophant</option>
-                <option>The Lovers</option>
-                <option>The Chariot</option>
-                <option>Strength</option>
-                <option>The Hermit</option>
-                <option>Wheel of Fortune</option>
-                <option>Justice</option>
-                <option>The Hanged Man</option>
-                <option>Death</option>
-                <option>Temperance</option>
-                <option>The Devil</option>
-                <option>The Tower</option>
-                <option>The Star</option>
-                <option>The Moon</option>
-                <option>The Sun</option>
-                <option>Judgement</option>
-                <option>The World</option>
-              </select>
-            </div>
-            <div class="col-md-4">
-              <div class="input-group">
-                <select class="form-select minor-suit">
-                  <option value="">Suit</option>
-                  <option>Sword</option>
-                  <option>Wand</option>
-                  <option>Pentacle</option>
-                  <option>Cup</option>
-                </select>
-                <select class="form-select minor-value">
-                  <option value="">Value</option>
-                  <option>2</option>
-                  <option>3</option>
-                  <option>4</option>
-                  <option>5</option>
-                  <option>6</option>
-                  <option>7</option>
-                  <option>8</option>
-                  <option>9</option>
-                  <option>10</option>
-                  <option>Knight</option>
-                  <option>Queen</option>
-                  <option>King</option>
-                  <option>Ace</option>
+    function generateCardFields() {
+      const amount = parseInt(document.getElementById("cardType").value) || 1;
+      const container = document.getElementById("cardInputs");
+      container.innerHTML = "";
+      for (let i = 0; i < amount; i++) {
+        container.innerHTML += `
+          <div class="card p-3 mb-3">
+            <div><strong>Card ${i + 1}</strong> <span id="cardHeader${i}" class="card-sticker"></span></div>
+            <div class="row g-2 mt-2">
+              <div class="col-md-3">
+                <select id="arcana${i}" class="form-select" onchange="toggleArcana(${i})">
+                  <option value="">Select Arcana</option>
+                  <option value="major">Major Arcana</option>
+                  <option value="minor">Minor Arcana</option>
                 </select>
               </div>
-            </div>
-            <div class="col-md-3">
-              <select class="form-select card-status">
-                <option>Straight</option>
-                <option>Reverse</option>
-              </select>
-            </div>
-            <div class="col-md-1">
-              <button class="btn btn-outline-danger w-100" onclick="this.closest('.card-field').remove()">×</button>
+              <div class="col-md-4" id="majorWrap${i}" style="display:none">
+                <select id="majorCard${i}" class="form-select" onchange="updateCardHeader(${i})">
+                  <option value="">Select Major Card</option>
+                  ${majorCards.map(c => `<option value="major:${c}">${c}</option>`).join('')}
+                </select>
+              </div>
+              <div class="col-md-2" id="minorValWrap${i}" style="display:none">
+                <select id="minorValue${i}" class="form-select" onchange="updateCardHeader(${i})">
+                  <option value="">Value</option>
+                  ${minorValues.map(v => `<option value="${v}">${v}</option>`).join('')}
+                </select>
+              </div>
+              <div class="col-md-2" id="minorHeadWrap${i}" style="display:none">
+                <select id="minorHead${i}" class="form-select" onchange="updateCardHeader(${i})">
+                  <option value="">Type</option>
+                  ${minorHeads.map(h => `<option value="${h}">${h}</option>`).join('')}
+                </select>
+              </div>
+              <div class="col-md-2">
+                <select id="cardStatus${i}" class="form-select" onchange="updateCardHeader(${i})">
+                  <option value="upright">Upright</option>
+                  <option value="reversed">Reversed</option>
+                </select>
+              </div>
+              <div class="col-md-1">
+                <button class="btn btn-sm btn-outline-danger" onclick="clearSingleCard(${i})">Clear</button>
+              </div>
             </div>
           </div>
-        </div>`;
+        `;
       }
-      document.getElementById("finalConfirmContainer").style.display = "block";
+      document.getElementById("cardFields").classList.remove("hidden");
     }
 
-    function generatePrompt() {
-      const fortuneType = document.getElementById("fortuneType").value;
-      const cards = document.querySelectorAll(".card-field");
-      const results = [];
-      cards.forEach((card, index) => {
-        const major = card.querySelector(".card-major").value;
-        const suit = card.querySelector(".minor-suit").value;
-        const val = card.querySelector(".minor-value").value;
-        const status = card.querySelector(".card-status").value;
-        const name = major || `${val} of ${suit}`;
-        results.push(`${name} (${status})`);
-      });
-      const output = `Fortune Type: ${fortuneType}\nCards: ${results.join(", ")}`;
-      document.getElementById("promptOutput").value = output;
-      const modal = new bootstrap.Modal(document.getElementById('promptModal'));
-      modal.show();
+    function toggleArcana(i) {
+      const arcana = document.getElementById(`arcana${i}`).value;
+      document.getElementById(`majorWrap${i}`).style.display = arcana === "major" ? "block" : "none";
+      document.getElementById(`minorValWrap${i}`).style.display = arcana === "minor" ? "block" : "none";
+      document.getElementById(`minorHeadWrap${i}`).style.display = arcana === "minor" ? "block" : "none";
+      updateCardHeader(i);
+    }
+
+    function updateCardHeader(i) {
+      const arcana = document.getElementById(`arcana${i}`).value;
+      const status = document.getElementById(`cardStatus${i}`).value;
+      let text = "";
+      if (arcana === "major") {
+        text = document.getElementById(`majorCard${i}`).value;
+      } else if (arcana === "minor") {
+        const val = document.getElementById(`minorValue${i}`).value;
+        const head = document.getElementById(`minorHead${i}`).value;
+        if (val && head) text = `minor:${head}:${val}`;
+      }
+      const header = document.getElementById(`cardHeader${i}`);
+      if (text) {
+        const parts = text.split(":");
+        const display = parts[0] === "major" ? parts[1] : `${parts[2]} of ${parts[1]}`;
+        header.innerHTML = `- ${display} (${status}) ${parts[0] === 'major' ? '🔮' : '🃏'}`;
+      } else {
+        header.innerHTML = '';
+      }
+    }
+
+    function clearSingleCard(i) {
+      document.getElementById(`arcana${i}`).value = '';
+      document.getElementById(`majorCard${i}`).value = '';
+      document.getElementById(`minorValue${i}`).value = '';
+      document.getElementById(`minorHead${i}`).value = '';
+      document.getElementById(`cardStatus${i}`).value = 'straight';
+      toggleArcana(i);
+    }
+
+    function clearCardValues() {
+      const total = document.getElementById("cardInputs").children.length;
+      for (let i = 0; i < total; i++) clearSingleCard(i);
+    }
+
+    function confirmPrompt() {
+      const type = document.getElementById("fortuneType").value;
+      const cardType = document.getElementById("cardType").value;
+      let result = `Fortune Type: ${type}\nCard Spread: ${cardType}\n\n`;
+      const total = document.getElementById("cardInputs").children.length;
+      for (let i = 0; i < total; i++) {
+        const arcana = document.getElementById(`arcana${i}`).value;
+        const status = document.getElementById(`cardStatus${i}`).value;
+        let text = '';
+        if (arcana === 'major') {
+          text = document.getElementById(`majorCard${i}`).value;
+        } else if (arcana === 'minor') {
+          const val = document.getElementById(`minorValue${i}`).value;
+          const head = document.getElementById(`minorHead${i}`).value;
+          if (val && head) text = `minor:${head}:${val}`;
+        }
+        if (!text) return alert('Please complete all cards.');
+        const parts = text.split(':');
+        const display = parts[0] === 'major' ? parts[1] : `${parts[2]} of ${parts[1]}`;
+        result += `Card ${i + 1}: ${display} (${status})\n`;
+      }
+      document.getElementById("promptText").value = result;
+      new bootstrap.Modal(document.getElementById("resultModal")).show();
     }
 
     function copyPrompt() {
-      const text = document.getElementById("promptOutput").value;
-      navigator.clipboard.writeText(text).then(() => {
-        document.getElementById("copyStatus").style.display = "inline";
-        setTimeout(() => document.getElementById("copyStatus").style.display = "none", 2000);
+      navigator.clipboard.writeText(document.getElementById("promptText").value).then(() => {
+        document.getElementById("copyConfirm").classList.remove("d-none");
+        setTimeout(() => document.getElementById("copyConfirm").classList.add("d-none"), 2000);
       });
     }
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
