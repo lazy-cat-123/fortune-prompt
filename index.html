@@ -305,7 +305,7 @@ Card Spread: ${cardType}`;
           prompt += `${card.display} (${card.status}), `;
         });
 
-        prompt += `\n⚠️ Finally, please translate your full answer into clear, natural Thai without changing or distorting the meaning of the reading. Use soft and understandable Thai language.`;
+        prompt += `\n\n⚠️ Finally, please translate your full answer into clear, natural Thai without changing or distorting the meaning of the reading. Use soft and understandable Thai language.`;
 
         document.getElementById("promptText").value = prompt;
         resultModal.show();
